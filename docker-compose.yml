@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: pg_dev
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: crochetdb_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - crochetdata:/var/lib/postgresql/data
+
+volumes:
+  crochetdata:
