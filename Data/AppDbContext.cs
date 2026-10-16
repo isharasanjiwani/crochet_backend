@@ -7,6 +7,7 @@ namespace CrochetWorldApi.Data;
 public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+    
     public DbSet<ProductModel> Products => Set<ProductModel>();
     public DbSet<ProductReviewModel> ProductReviews => Set<ProductReviewModel>();
     public DbSet<UserModel> Users => Set<UserModel>();

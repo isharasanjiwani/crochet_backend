@@ -226,6 +226,12 @@ namespace CrochetWorldApi.Migrations
                     b.Property<string>("ProfileImage")
                         .HasColumnType("text");
 
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("RefreshTokenExpiryTime")
+                        .HasColumnType("timestamp with time zone");
+
                     b.PrimitiveCollection<List<string>>("ShopTypes")
                         .HasColumnType("text[]");
 
@@ -309,14 +315,11 @@ namespace CrochetWorldApi.Migrations
                         {
                             b1.Property<Guid>("UserModelId");
 
-                            b1.Property<string>("AccountHolderName")
-                                .IsRequired();
+                            b1.Property<string>("AccountHolderName");
 
-                            b1.Property<string>("AccountNumber")
-                                .IsRequired();
+                            b1.Property<string>("AccountNumber");
 
-                            b1.Property<string>("BankName")
-                                .IsRequired();
+                            b1.Property<string>("BankName");
 
                             b1.HasKey("UserModelId");
 

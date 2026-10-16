@@ -1,6 +1,6 @@
 public class BankDetails
 {
-    public required string AccountNumber { get; set; }
-    public required string BankName { get; set; }
-    public required string AccountHolderName { get; set; }
+    public string? AccountNumber { get; set; }
+    public string? BankName { get; set; }
+    public string? AccountHolderName { get; set; }
 }

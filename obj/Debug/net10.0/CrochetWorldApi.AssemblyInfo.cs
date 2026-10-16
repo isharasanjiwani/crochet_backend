@@ -10,10 +10,11 @@
 using System;
 using System.Reflection;
 
+[assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute("4711308a-d503-40b9-8bdf-14adc1c4536e")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("CrochetWorldApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+593ea9fb36be8c97793cbb4ac1d8879df1cd76d2")]
 [assembly: System.Reflection.AssemblyProductAttribute("CrochetWorldApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CrochetWorldApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
