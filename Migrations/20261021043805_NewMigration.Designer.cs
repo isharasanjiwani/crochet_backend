@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CrochetWorldApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261014045521_AddProductReview")]
-    partial class AddProductReview
+    [Migration("20261021043805_NewMigration")]
+    partial class NewMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -130,9 +130,9 @@ namespace CrochetWorldApi.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.PrimitiveCollection<List<string>>("Images")
+                    b.PrimitiveCollection<List<byte[]>>("Images")
                         .IsRequired()
-                        .HasColumnType("text[]");
+                        .HasColumnType("bytea[]");
 
                     b.Property<bool>("IsHandMade")
                         .HasColumnType("boolean");
@@ -219,6 +219,10 @@ namespace CrochetWorldApi.Migrations
                     b.Property<string>("MobileNumber")
                         .HasColumnType("text");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("text");
@@ -226,15 +230,24 @@ namespace CrochetWorldApi.Migrations
                     b.PrimitiveCollection<List<string>>("PaymentMethods")
                         .HasColumnType("text[]");
 
-                    b.Property<string>("ProfileImage")
+                    b.Property<byte[]>("ProfileImage")
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("RefreshTokenExpiryTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ShopName")
                         .HasColumnType("text");
 
                     b.PrimitiveCollection<List<string>>("ShopTypes")
                         .HasColumnType("text[]");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -312,14 +325,11 @@ namespace CrochetWorldApi.Migrations
                         {
                             b1.Property<Guid>("UserModelId");
 
-                            b1.Property<string>("AccountHolderName")
-                                .IsRequired();
+                            b1.Property<string>("AccountHolderName");
 
-                            b1.Property<string>("AccountNumber")
-                                .IsRequired();
+                            b1.Property<string>("AccountNumber");
 
-                            b1.Property<string>("BankName")
-                                .IsRequired();
+                            b1.Property<string>("BankName");
 
                             b1.HasKey("UserModelId");
 

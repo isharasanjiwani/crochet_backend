@@ -1,5 +1,5 @@
 using System;
-using CrochetWorldApi.Models;
+using CrochetWorldApi.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace CrochetWorldApi.Data;
@@ -8,11 +8,11 @@ public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
     
-    public DbSet<ProductModel> Products => Set<ProductModel>();
-    public DbSet<ProductReviewModel> ProductReviews => Set<ProductReviewModel>();
-    public DbSet<UserModel> Users => Set<UserModel>();
-    public DbSet<OrderModel> Orders => Set<OrderModel>();
-    public DbSet<NotificationModel> Notifications => Set<NotificationModel>();
+    public DbSet<ProductEntity> Products => Set<ProductEntity>();
+    public DbSet<ProductReviewEntity> ProductReviews => Set<ProductReviewEntity>();
+    public DbSet<UserEntity> Users => Set<UserEntity>();
+    public DbSet<OrderEntity> Orders => Set<OrderEntity>();
+    public DbSet<NotificationEntity> Notifications => Set<NotificationEntity>();
 
     public override int SaveChanges()
     {
@@ -29,7 +29,7 @@ public class AppDbContext : DbContext
 
     private void AddTimestamps()
     {
-        var entries = ChangeTracker.Entries<BaseModel>();
+        var entries = ChangeTracker.Entries<BaseEntity>();
         var now = DateTime.UtcNow;
 
         foreach (var entity in entries)
@@ -49,13 +49,13 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<ProductModel>()
+        modelBuilder.Entity<ProductEntity>()
             .OwnsMany(p => p.Specifications, b => b.ToJson());
 
-        modelBuilder.Entity<UserModel>()
+        modelBuilder.Entity<UserEntity>()
             .OwnsOne(p => p.BankDetails, b => b.ToJson());
 
-        modelBuilder.Entity<OrderModel>()
+        modelBuilder.Entity<OrderEntity>()
             .OwnsMany(p => p.OrderDetails, b => b.ToJson());
     }
 }

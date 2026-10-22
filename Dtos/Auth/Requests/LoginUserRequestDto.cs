@@ -12,5 +12,5 @@ public class LoginUserRequestDto
     public required string Password {get; set;}
 
     [Required]
-    public required string Type {get; set;}
+    public required string Role {get; set;}
 }

@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CrochetWorldApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261015114319_AddRefreshTokenAndExpiryToUser")]
-    partial class AddRefreshTokenAndExpiryToUser
+    [Migration("20261022042817_ChangeNaame")]
+    partial class ChangeNaame
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,7 +26,7 @@ namespace CrochetWorldApi.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("CrochetWorldApi.Models.NotificationModel", b =>
+            modelBuilder.Entity("CrochetWorldApi.Entities.NotificationEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -61,7 +61,7 @@ namespace CrochetWorldApi.Migrations
                     b.ToTable("notifications");
                 });
 
-            modelBuilder.Entity("CrochetWorldApi.Models.OrderModel", b =>
+            modelBuilder.Entity("CrochetWorldApi.Entities.OrderEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -109,7 +109,7 @@ namespace CrochetWorldApi.Migrations
                     b.ToTable("orders");
                 });
 
-            modelBuilder.Entity("CrochetWorldApi.Models.ProductModel", b =>
+            modelBuilder.Entity("CrochetWorldApi.Entities.ProductEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -130,9 +130,12 @@ namespace CrochetWorldApi.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.PrimitiveCollection<List<string>>("Images")
+                    b.PrimitiveCollection<List<byte[]>>("Images")
                         .IsRequired()
-                        .HasColumnType("text[]");
+                        .HasColumnType("bytea[]");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsHandMade")
                         .HasColumnType("boolean");
@@ -146,9 +149,6 @@ namespace CrochetWorldApi.Migrations
 
                     b.Property<decimal?>("Price")
                         .HasColumnType("numeric");
-
-                    b.Property<bool>("PriceDepends")
-                        .HasColumnType("boolean");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
@@ -171,7 +171,7 @@ namespace CrochetWorldApi.Migrations
                     b.ToTable("products");
                 });
 
-            modelBuilder.Entity("CrochetWorldApi.Models.ProductReviewModel", b =>
+            modelBuilder.Entity("CrochetWorldApi.Entities.ProductReviewEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -200,7 +200,7 @@ namespace CrochetWorldApi.Migrations
                     b.ToTable("product_reviews");
                 });
 
-            modelBuilder.Entity("CrochetWorldApi.Models.UserModel", b =>
+            modelBuilder.Entity("CrochetWorldApi.Entities.UserEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -219,6 +219,10 @@ namespace CrochetWorldApi.Migrations
                     b.Property<string>("MobileNumber")
                         .HasColumnType("text");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("text");
@@ -226,8 +230,8 @@ namespace CrochetWorldApi.Migrations
                     b.PrimitiveCollection<List<string>>("PaymentMethods")
                         .HasColumnType("text[]");
 
-                    b.Property<string>("ProfileImage")
-                        .HasColumnType("text");
+                    b.Property<byte[]>("ProfileImage")
+                        .HasColumnType("bytea");
 
                     b.Property<string>("RefreshToken")
                         .HasColumnType("text");
@@ -235,12 +239,15 @@ namespace CrochetWorldApi.Migrations
                     b.Property<DateTime?>("RefreshTokenExpiryTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.PrimitiveCollection<List<string>>("ShopTypes")
-                        .HasColumnType("text[]");
-
-                    b.Property<string>("Type")
+                    b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<string>("ShopName")
+                        .HasColumnType("text");
+
+                    b.PrimitiveCollection<List<string>>("ShopTypes")
+                        .HasColumnType("text[]");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -250,11 +257,11 @@ namespace CrochetWorldApi.Migrations
                     b.ToTable("users");
                 });
 
-            modelBuilder.Entity("CrochetWorldApi.Models.OrderModel", b =>
+            modelBuilder.Entity("CrochetWorldApi.Entities.OrderEntity", b =>
                 {
                     b.OwnsMany("OrderDetails", "OrderDetails", b1 =>
                         {
-                            b1.Property<Guid>("OrderModelId");
+                            b1.Property<Guid>("OrderEntityId");
 
                             b1.Property<int>("__synthesizedOrdinal")
                                 .ValueGeneratedOnAdd();
@@ -265,7 +272,7 @@ namespace CrochetWorldApi.Migrations
 
                             b1.Property<string>("Size");
 
-                            b1.HasKey("OrderModelId", "__synthesizedOrdinal");
+                            b1.HasKey("OrderEntityId", "__synthesizedOrdinal");
 
                             b1.ToTable("orders");
 
@@ -274,30 +281,28 @@ namespace CrochetWorldApi.Migrations
                                 .HasColumnType("jsonb");
 
                             b1.WithOwner()
-                                .HasForeignKey("OrderModelId");
+                                .HasForeignKey("OrderEntityId");
                         });
 
                     b.Navigation("OrderDetails");
                 });
 
-            modelBuilder.Entity("CrochetWorldApi.Models.ProductModel", b =>
+            modelBuilder.Entity("CrochetWorldApi.Entities.ProductEntity", b =>
                 {
                     b.OwnsMany("ProductSpecification", "Specifications", b1 =>
                         {
-                            b1.Property<Guid>("ProductModelId");
+                            b1.Property<Guid>("ProductEntityId");
 
                             b1.Property<int>("__synthesizedOrdinal")
                                 .ValueGeneratedOnAdd();
 
                             b1.Property<string>("Color");
 
-                            b1.Property<int>("Id");
-
                             b1.Property<decimal>("Price");
 
                             b1.Property<string>("Size");
 
-                            b1.HasKey("ProductModelId", "__synthesizedOrdinal");
+                            b1.HasKey("ProductEntityId", "__synthesizedOrdinal");
 
                             b1.ToTable("products");
 
@@ -306,17 +311,17 @@ namespace CrochetWorldApi.Migrations
                                 .HasColumnType("jsonb");
 
                             b1.WithOwner()
-                                .HasForeignKey("ProductModelId");
+                                .HasForeignKey("ProductEntityId");
                         });
 
                     b.Navigation("Specifications");
                 });
 
-            modelBuilder.Entity("CrochetWorldApi.Models.UserModel", b =>
+            modelBuilder.Entity("CrochetWorldApi.Entities.UserEntity", b =>
                 {
                     b.OwnsOne("BankDetails", "BankDetails", b1 =>
                         {
-                            b1.Property<Guid>("UserModelId");
+                            b1.Property<Guid>("UserEntityId");
 
                             b1.Property<string>("AccountHolderName");
 
@@ -324,7 +329,7 @@ namespace CrochetWorldApi.Migrations
 
                             b1.Property<string>("BankName");
 
-                            b1.HasKey("UserModelId");
+                            b1.HasKey("UserEntityId");
 
                             b1.ToTable("users");
 
@@ -333,7 +338,7 @@ namespace CrochetWorldApi.Migrations
                                 .HasColumnType("jsonb");
 
                             b1.WithOwner()
-                                .HasForeignKey("UserModelId");
+                                .HasForeignKey("UserEntityId");
                         });
 
                     b.Navigation("BankDetails");

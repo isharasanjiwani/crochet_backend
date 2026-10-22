@@ -5,62 +5,80 @@ using System.Text;
 using CrochetWorldApi.Data;
 using CrochetWorldApi.Dtos.Auth.Requests;
 using CrochetWorldApi.Dtos.Auth.Responses;
-using CrochetWorldApi.Models;
+using CrochetWorldApi.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace CrochetWorldApi.Services.Auth;
 
-public class AuthService(AppDbContext context, IConfiguration configuration) : IAuthService
+public class AuthService(AppDbContext context, IConfiguration configuration, ILogger<AuthService> logger) : IAuthService
 {
     public async Task<UserResponseDto?> CreateUserAsync(CreateUserRequestDto request)
     {
-        if(await context.Users.AnyAsync(u => u.Email == request.Email && u.Type == request.Type))
+        try
         {
-            return null;
-        }
-
-        var user = new UserModel
-        {
-            Id = Guid.NewGuid(),
-            Type = request.Type,
-            Email = request.Email,
-            Location = request.Location,
-            MobileNumber = request.MobileNumber,
-            ShopTypes = request.ShopTypes,
-            PaymentMethods = request.PaymentMethods,
-            Password = request.Password,
-
-            BankDetails = new BankDetails
+            if(await context.Users.AnyAsync(u => u.Email == request.Email && u.Role == request.Role))
             {
-                AccountNumber = request.AccountNumber,
-                BankName = request.BankName,
-                AccountHolderName = request.AccountHolderName
+                return null;
             }
-        };
 
-        var hashedPassword = new PasswordHasher<UserModel>()
-            .HashPassword(user, request.Password);
+            var user = new UserEntity
+            {
+                Id = Guid.NewGuid(),
+                Name = request.Name,
+                ShopName = request.ShopName,
+                Role = request.Role,
+                Email = request.Email,
+                Location = request.Location,
+                MobileNumber = request.MobileNumber,
+                ShopTypes = request.ShopTypes,
+                PaymentMethods = request.PaymentMethods,
+                Password = string.Empty,
 
-        user.Password = hashedPassword;
+                BankDetails = new BankDetails
+                {
+                    AccountNumber = request.AccountNumber,
+                    BankName = request.BankName,
+                    AccountHolderName = request.AccountHolderName
+                }
+            };
 
-        context.Users.Add(user);
-        await context.SaveChangesAsync();
+            var hashedPassword = new PasswordHasher<UserEntity>()
+                .HashPassword(user, request.Password);
 
-        return await CreateTokenResponse(user);
+            user.Password = hashedPassword;
+
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+
+            logger.LogInformation(
+                "Failed to register user with type {UserType}",
+                request.Role
+            );
+
+            return await CreateTokenResponse(user);
+        } catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Failed to register user with type {UserType}",
+                request.Role
+            );
+            throw;
+        }
     }
 
     public async Task<UserResponseDto?> LoginUserAsync(LoginUserRequestDto request)
     {
         var user = await context.Users
-            .FirstOrDefaultAsync(u => u.Email == request.Email && u.Type == request.Type);
+            .FirstOrDefaultAsync(u => u.Email == request.Email && u.Role == request.Role);
         if(user is null)
         {
             return null;
         }
 
-        if(new PasswordHasher<UserModel>().VerifyHashedPassword(user, user.Password, request.Password) 
+        if(new PasswordHasher<UserEntity>().VerifyHashedPassword(user, user.Password, request.Password) 
             == PasswordVerificationResult.Failed)
         {
             return null;
@@ -78,11 +96,12 @@ public class AuthService(AppDbContext context, IConfiguration configuration) : I
         return await CreateTokenResponse(user);
     }
 
-    private async Task<UserResponseDto> CreateTokenResponse(UserModel user)
+    private async Task<UserResponseDto> CreateTokenResponse(UserEntity user)
     {
         return new UserResponseDto
         {
             UserId = user.Id,
+            Role = user.Role,
             AccessToken = CreateToken(user),
             RefreshToken = await GenerateAndSaveRefreshTokenAsync(user)
         };
@@ -96,7 +115,7 @@ public class AuthService(AppDbContext context, IConfiguration configuration) : I
         return Convert.ToBase64String(randomNumber);
     }
 
-    private async Task<UserModel?> ValidateRefreshTokenAsync(Guid userId, string refreshToken)
+    private async Task<UserEntity?> ValidateRefreshTokenAsync(Guid userId, string refreshToken)
     {
         var user = await context.Users.FindAsync(userId);
         if(user is null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
@@ -107,7 +126,7 @@ public class AuthService(AppDbContext context, IConfiguration configuration) : I
         return user;
     }
 
-    private async Task<string> GenerateAndSaveRefreshTokenAsync(UserModel user)
+    private async Task<string> GenerateAndSaveRefreshTokenAsync(UserEntity user)
     {
         var refreshToken = GenerateRefreshToken();
         user.RefreshToken = refreshToken;
@@ -116,13 +135,13 @@ public class AuthService(AppDbContext context, IConfiguration configuration) : I
         return refreshToken;
     }
 
-    private string CreateToken(UserModel user)
+    private string CreateToken(UserEntity user)
     {
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Role, user.Type)
+            new Claim(ClaimTypes.Role, user.Role)
         };
 
         var key = new SymmetricSecurityKey(

@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace CrochetWorldApi.Models;
+namespace CrochetWorldApi.Entities;
 
 [Table("product_reviews")]
-public class ProductReviewModel : BaseModel
+public class ProductReviewEntity : BaseEntity
 {
     public Guid Id { get; set; }
     public required int UserId { get; set; }

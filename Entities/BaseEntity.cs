@@ -1,8 +1,8 @@
 using System;
 
-namespace CrochetWorldApi.Models;
+namespace CrochetWorldApi.Entities;
 
-public class BaseModel
+public class BaseEntity
 {
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace CrochetWorldApi.Models;
+namespace CrochetWorldApi.Entities;
 
 [Table("notifications")]
-public class NotificationModel : BaseModel
+public class NotificationEntity : BaseEntity
 {
     public Guid Id { get; set; }
     public required int UserId { get; set; }

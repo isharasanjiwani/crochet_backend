@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace CrochetWorldApi.Models;
+namespace CrochetWorldApi.Entities;
 
 [Table("orders")]
-public class OrderModel : BaseModel
+public class OrderEntity : BaseEntity
 {
     public Guid Id { get; set; }
     public required Guid UserId { get; set; }

@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CrochetWorldApi.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class NewMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -54,6 +54,23 @@ namespace CrochetWorldApi.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "product_reviews",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    ProductId = table.Column<int>(type: "integer", nullable: false),
+                    Comments = table.Column<List<string>>(type: "text[]", nullable: true),
+                    Rating = table.Column<decimal>(type: "numeric", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_product_reviews", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "products",
                 columns: table => new
                 {
@@ -62,7 +79,7 @@ namespace CrochetWorldApi.Migrations
                     Description = table.Column<string>(type: "text", nullable: true),
                     Material = table.Column<string>(type: "text", nullable: true),
                     IsHandMade = table.Column<bool>(type: "boolean", nullable: false),
-                    Images = table.Column<List<string>>(type: "text[]", nullable: false),
+                    Images = table.Column<List<byte[]>>(type: "bytea[]", nullable: false),
                     Type = table.Column<string>(type: "text", nullable: false),
                     Quantity = table.Column<int>(type: "integer", nullable: false),
                     Colors = table.Column<List<string>>(type: "text[]", nullable: true),
@@ -86,14 +103,18 @@ namespace CrochetWorldApi.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Type = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    ShopName = table.Column<string>(type: "text", nullable: true),
+                    Role = table.Column<string>(type: "text", nullable: false),
                     Email = table.Column<string>(type: "text", nullable: false),
                     Location = table.Column<string>(type: "text", nullable: true),
                     MobileNumber = table.Column<string>(type: "text", nullable: true),
                     ShopTypes = table.Column<List<string>>(type: "text[]", nullable: true),
                     PaymentMethods = table.Column<List<string>>(type: "text[]", nullable: true),
                     Password = table.Column<string>(type: "text", nullable: false),
-                    ProfileImage = table.Column<string>(type: "text", nullable: true),
+                    ProfileImage = table.Column<byte[]>(type: "bytea", nullable: true),
+                    RefreshToken = table.Column<string>(type: "text", nullable: true),
+                    RefreshTokenExpiryTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     BankDetails = table.Column<string>(type: "jsonb", nullable: true)
@@ -112,6 +133,9 @@ namespace CrochetWorldApi.Migrations
 
             migrationBuilder.DropTable(
                 name: "orders");
+
+            migrationBuilder.DropTable(
+                name: "product_reviews");
 
             migrationBuilder.DropTable(
                 name: "products");

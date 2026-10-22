@@ -7,8 +7,10 @@ public class CreateUserRequestDto
     [Required]
     public required string Name { get; set; }
 
+    public string? ShopName { get; set; }
+
     [Required]
-    public required string Type { get; set; }
+    public required string Role { get; set; }
 
     [Required]
     public required string Email { get; set; }
@@ -30,5 +32,4 @@ public class CreateUserRequestDto
     [Required]
     public required string Password { get; set; }
 
-    public IFormFile? ProfileImage { get; set; }
 }

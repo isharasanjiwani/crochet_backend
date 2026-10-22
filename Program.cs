@@ -1,13 +1,31 @@
 using System.Text;
 using CrochetWorldApi.Data;
+using CrochetWorldApi.Handlers;
 using CrochetWorldApi.Services;
 using CrochetWorldApi.Services.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.ClearProviders();
+
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
+builder.Services.AddAutoMapper(
+    cfg => { },
+    typeof(MappingProfile)
+);
 
 builder.Services.AddControllers();
 
@@ -43,6 +61,10 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
+
+app.UseSerilogRequestLogging();
+
+app.UseExceptionHandler();
 
 app.UseAuthentication();
 app.UseAuthorization();
