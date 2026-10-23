@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CrochetWorldApi.Migrations
 {
     /// <inheritdoc />
-    public partial class NewMigration : Migration
+    public partial class InitialMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -54,51 +54,6 @@ namespace CrochetWorldApi.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "product_reviews",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserId = table.Column<int>(type: "integer", nullable: false),
-                    ProductId = table.Column<int>(type: "integer", nullable: false),
-                    Comments = table.Column<List<string>>(type: "text[]", nullable: true),
-                    Rating = table.Column<decimal>(type: "numeric", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_product_reviews", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "products",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: true),
-                    Material = table.Column<string>(type: "text", nullable: true),
-                    IsHandMade = table.Column<bool>(type: "boolean", nullable: false),
-                    Images = table.Column<List<byte[]>>(type: "bytea[]", nullable: false),
-                    Type = table.Column<string>(type: "text", nullable: false),
-                    Quantity = table.Column<int>(type: "integer", nullable: false),
-                    Colors = table.Column<List<string>>(type: "text[]", nullable: true),
-                    Sizes = table.Column<List<string>>(type: "text[]", nullable: true),
-                    Price = table.Column<decimal>(type: "numeric", nullable: true),
-                    PriceDepends = table.Column<bool>(type: "boolean", nullable: false),
-                    DeliveryFee = table.Column<decimal>(type: "numeric", nullable: false),
-                    RatingCount = table.Column<int>(type: "integer", nullable: false),
-                    AverageRating = table.Column<decimal>(type: "numeric", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Specifications = table.Column<string>(type: "jsonb", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_products", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "users",
                 columns: table => new
                 {
@@ -112,7 +67,7 @@ namespace CrochetWorldApi.Migrations
                     ShopTypes = table.Column<List<string>>(type: "text[]", nullable: true),
                     PaymentMethods = table.Column<List<string>>(type: "text[]", nullable: true),
                     Password = table.Column<string>(type: "text", nullable: false),
-                    ProfileImage = table.Column<byte[]>(type: "bytea", nullable: true),
+                    ProfileImage = table.Column<string>(type: "text", nullable: true),
                     RefreshToken = table.Column<string>(type: "text", nullable: true),
                     RefreshTokenExpiryTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -123,6 +78,87 @@ namespace CrochetWorldApi.Migrations
                 {
                     table.PrimaryKey("PK_users", x => x.Id);
                 });
+
+            migrationBuilder.CreateTable(
+                name: "products",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    Material = table.Column<string>(type: "text", nullable: true),
+                    IsHandMade = table.Column<bool>(type: "boolean", nullable: false),
+                    Images = table.Column<List<string>>(type: "text[]", nullable: false),
+                    Type = table.Column<string>(type: "text", nullable: false),
+                    Quantity = table.Column<int>(type: "integer", nullable: false),
+                    Colors = table.Column<List<string>>(type: "text[]", nullable: true),
+                    Sizes = table.Column<List<string>>(type: "text[]", nullable: true),
+                    Price = table.Column<decimal>(type: "numeric", nullable: true),
+                    DeliveryFee = table.Column<decimal>(type: "numeric", nullable: false),
+                    RatingCount = table.Column<int>(type: "integer", nullable: false),
+                    AverageRating = table.Column<decimal>(type: "numeric", nullable: false),
+                    IsAvailable = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Specifications = table.Column<string>(type: "jsonb", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_products", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_products_users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "product_reviews",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    ProductId = table.Column<int>(type: "integer", nullable: false),
+                    ProductId1 = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsLiked = table.Column<bool>(type: "boolean", nullable: false),
+                    Comment = table.Column<string>(type: "text", nullable: true),
+                    Rating = table.Column<decimal>(type: "numeric", nullable: true),
+                    UserEntityId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_product_reviews", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_product_reviews_products_ProductId1",
+                        column: x => x.ProductId1,
+                        principalTable: "products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_product_reviews_users_UserEntityId",
+                        column: x => x.UserEntityId,
+                        principalTable: "users",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_product_reviews_ProductId1",
+                table: "product_reviews",
+                column: "ProductId1");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_product_reviews_UserEntityId",
+                table: "product_reviews",
+                column: "UserEntityId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_products_UserId",
+                table: "products",
+                column: "UserId");
         }
 
         /// <inheritdoc />

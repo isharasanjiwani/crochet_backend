@@ -3,6 +3,8 @@ using CrochetWorldApi.Data;
 using CrochetWorldApi.Handlers;
 using CrochetWorldApi.Services;
 using CrochetWorldApi.Services.Auth;
+using CrochetWorldApi.Services.Image;
+using CrochetWorldApi.Services.Product;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -14,7 +16,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 
 Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Error)
+    .MinimumLevel.Override("System", Serilog.Events.LogEventLevel.Error)
+    .WriteTo.Console()
+    .WriteTo.File(
+        "logs/log-.txt",
+        rollingInterval: RollingInterval.Day,
+        retainedFileCountLimit: 7)
     .CreateLogger();
 
 builder.Host.UseSerilog();
@@ -51,8 +60,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddScoped<ICrochetProductService, CrochetProductService>();
+builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IImageService, ImageService>();
 
 var app = builder.Build();
 
@@ -62,9 +72,9 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
-app.UseSerilogRequestLogging();
-
 app.UseExceptionHandler();
+
+app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();

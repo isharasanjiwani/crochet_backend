@@ -18,6 +18,10 @@ public class MappingProfile : Profile
                 opt => opt.Ignore()
             )
             .ForMember(
+                dest => dest.Specifications,
+                opt => opt.Ignore()
+            )
+            .ForMember(
                 dest => dest.RatingCount,
                 opt => opt.Ignore()
             )
@@ -28,5 +32,7 @@ public class MappingProfile : Profile
 
         CreateMap<ProductEntity, CreateProductResDto>()
             .ForMember(dest => dest.ImageUrls, opt => opt.Ignore());
+
+        CreateMap<ProductEntity, ProductResDto>();
     }
 }

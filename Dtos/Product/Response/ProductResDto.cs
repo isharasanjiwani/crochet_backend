@@ -2,7 +2,7 @@ using System;
 
 namespace CrochetWorldApi.Dtos.Product.Response;
 
-public class GetProductResDto
+public class ProductResDto
 {
     public Guid Id { get; set; }
     public required string Name { get; set; }

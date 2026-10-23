@@ -6,11 +6,13 @@ namespace CrochetWorldApi.Entities;
 public class ProductEntity : BaseEntity
 {
     public Guid Id { get; set; }
+    public Guid UserId { get; set; }
+    public UserEntity User { get; set; } = null!;
     public required string Name { get; set; }
     public string? Description { get; set; }
     public string? Material { get; set; }
     public required bool IsHandMade { get; set; }
-    public required List<byte[]> Images { get; set; }
+    public required List<string> Images { get; set; }
     public required string Type { get; set; }
     public required int Quantity { get; set; }
     public List<string>? Colors { get; set; }
@@ -21,5 +23,6 @@ public class ProductEntity : BaseEntity
     public required int RatingCount { get; set; }
     public required decimal AverageRating { get; set; }
     public bool IsAvailable { get; set; }
+    public List<ProductReviewEntity> Reviews { get; set; } = [];
 
 }

@@ -30,7 +30,7 @@ public class CreateProductReqDto
 
     public decimal? Price { get; set; }
 
-    public List<Specification>? Specifications { get; set; }
+    public string? Specifications { get; set; }
 
     [Required]
     public required decimal DeliveryFee { get; set; }
