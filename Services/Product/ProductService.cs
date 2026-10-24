@@ -119,9 +119,45 @@ public class ProductService(AppDbContext context,IMapper mapper, IImageService i
                     Items = products,
                     PageNumber = pageNumber,
                     PageSize = pageSize,
-                    TotalCount = totalCount
+                    TotalCount = totalCount,
                 }
             );
         }
+    }
+
+    public async Task<Result<ProductDetailsResDto?>> GetProductDetailsById(Guid id)
+    {
+        var product = await context.Products
+            .AsNoTracking()
+            .Where(p => p.Id == id)
+            .Select(p => new ProductDetailsResDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description,
+                Colors = p.Colors,
+                Price = p.Price ?? 0,
+                Specifications = mapper.Map<List<Specification>>(p.Specifications),
+                IsHandMade = p.IsHandMade,
+                ImageUrls = p.Images,
+                ProfileImageUrl = p.User.ProfileImage,
+                ShopName = p.User.ShopName
+            })
+            .FirstOrDefaultAsync();
+
+        if(product is null)
+        {
+            logger.LogWarning(
+                "Get product Details. ID : {@id} Response: Products not Found",
+                id
+            );
+            return Result<ProductDetailsResDto?>.Failure("Product Not Found", ErrorType.NotFound);
+        }
+
+        logger.LogInformation(
+            "Get product Details. ID : {@id} Response: Successfully send the details",
+            id
+        );
+        return Result<ProductDetailsResDto?>.Success(product);
     }
 }

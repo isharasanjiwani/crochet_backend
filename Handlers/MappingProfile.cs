@@ -10,7 +10,8 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        CreateMap<Specification, ProductSpecification>();
+        CreateMap<ProductSpecification, Specification>().ReverseMap();
+
 
         CreateMap<CreateProductReqDto, ProductEntity>()
             .ForMember(

@@ -50,5 +50,17 @@ namespace CrochetWorldApi.Controllers
 
             return Ok(result.Data);
         }
+
+        [HttpGet("details/:id")]
+        [Authorize]
+        public async Task<ActionResult> GetProductDetailsById(Guid id)
+        {
+            var result = await productService.GetProductDetailsById(id);
+
+            if(!result.IsSuccess)
+                return HandleResult(result);
+
+            return Ok(result.Data);
+        }
     }
 }
