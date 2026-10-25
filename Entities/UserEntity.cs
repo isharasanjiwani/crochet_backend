@@ -20,6 +20,10 @@ public class UserEntity : BaseEntity
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiryTime { get; set; }
 
-    public List<ProductEntity> Products { get; set; } = [];
-    public List<ProductReviewEntity> ProductReviews { get; set; } = [];
+    public List<ProductEntity> Products { get; set; } = new List<ProductEntity>();
+
+    public List<ProductReviewEntity> ProductReviews { get; set; } = new List<ProductReviewEntity>();
+
+    public ICollection<OrderEntity> BuyerOrders { get; set; }
+        = new List<OrderEntity>();
 }

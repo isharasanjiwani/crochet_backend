@@ -23,6 +23,6 @@ public class ProductEntity : BaseEntity
     public required int RatingCount { get; set; }
     public required decimal AverageRating { get; set; }
     public bool IsAvailable { get; set; }
-    public List<ProductReviewEntity> Reviews { get; set; } = [];
-
+    public ICollection<ProductReviewEntity> Reviews { get; set; } = new List<ProductReviewEntity>();
+    public ICollection<OrderEntity> Orders { get; set; } = new List<OrderEntity>();
 }

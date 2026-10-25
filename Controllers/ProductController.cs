@@ -62,5 +62,53 @@ namespace CrochetWorldApi.Controllers
 
             return Ok(result.Data);
         }
+
+        [HttpPost("/:id/comment")]   
+        [Authorize]
+        public async Task<ActionResult> CreateCommentOnProduct(CreateCommentReqDto request)
+        {
+            var stringValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool success = Guid.TryParse(stringValue, out Guid userId);
+            if(!success)
+            {
+                return Unauthorized();
+            }
+            var result = await productService.CreateCommentOnProduct(request, userId);
+
+            if(!result.IsSuccess)
+                return HandleResult(result);
+
+            return Ok(result);
+        }
+
+        [HttpGet("/:id/comments")]
+        [Authorize]
+        public async Task<ActionResult> GetProductCommentsById(Guid id)
+        {
+            var result = await productService.GetProductCommentsById(id);
+
+            if(!result.IsSuccess)
+                return HandleResult(result);
+
+            return Ok(result.Data);
+        }
+
+        [HttpPost("/like")]   
+        [Authorize]
+        public async Task<ActionResult> CreateLikeOnProduct(CreateLikeReqDto request)
+        {
+            var stringValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool success = Guid.TryParse(stringValue, out Guid userId);
+            if(!success)
+            {
+                return Unauthorized();
+            }
+            var result = await productService.CreateLikeOnProduct(request, userId);
+
+            if(!result.IsSuccess)
+                return HandleResult(result);
+
+            return Ok(result);
+        }
     }
 }

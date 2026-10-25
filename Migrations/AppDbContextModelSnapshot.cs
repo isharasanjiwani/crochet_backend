@@ -103,6 +103,10 @@ namespace CrochetWorldApi.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("UserId");
+
                     b.ToTable("orders");
                 });
 
@@ -188,10 +192,7 @@ namespace CrochetWorldApi.Migrations
                     b.Property<bool>("IsLiked")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("ProductId")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("ProductId1")
+                    b.Property<Guid>("ProductId")
                         .HasColumnType("uuid");
 
                     b.Property<decimal?>("Rating")
@@ -200,17 +201,14 @@ namespace CrochetWorldApi.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("UserEntityId")
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductId1");
+                    b.HasIndex("ProductId");
 
-                    b.HasIndex("UserEntityId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("product_reviews");
                 });
@@ -274,6 +272,18 @@ namespace CrochetWorldApi.Migrations
 
             modelBuilder.Entity("CrochetWorldApi.Entities.OrderEntity", b =>
                 {
+                    b.HasOne("CrochetWorldApi.Entities.ProductEntity", "Product")
+                        .WithMany("Orders")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CrochetWorldApi.Entities.UserEntity", "User")
+                        .WithMany("BuyerOrders")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.OwnsMany("OrderDetails", "OrderDetails", b1 =>
                         {
                             b1.Property<Guid>("OrderEntityId");
@@ -300,6 +310,10 @@ namespace CrochetWorldApi.Migrations
                         });
 
                     b.Navigation("OrderDetails");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("CrochetWorldApi.Entities.ProductEntity", b =>
@@ -344,15 +358,19 @@ namespace CrochetWorldApi.Migrations
                 {
                     b.HasOne("CrochetWorldApi.Entities.ProductEntity", "Product")
                         .WithMany("Reviews")
-                        .HasForeignKey("ProductId1")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("CrochetWorldApi.Entities.UserEntity", null)
+                    b.HasOne("CrochetWorldApi.Entities.UserEntity", "User")
                         .WithMany("ProductReviews")
-                        .HasForeignKey("UserEntityId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Product");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("CrochetWorldApi.Entities.UserEntity", b =>
@@ -384,11 +402,15 @@ namespace CrochetWorldApi.Migrations
 
             modelBuilder.Entity("CrochetWorldApi.Entities.ProductEntity", b =>
                 {
+                    b.Navigation("Orders");
+
                     b.Navigation("Reviews");
                 });
 
             modelBuilder.Entity("CrochetWorldApi.Entities.UserEntity", b =>
                 {
+                    b.Navigation("BuyerOrders");
+
                     b.Navigation("ProductReviews");
 
                     b.Navigation("Products");

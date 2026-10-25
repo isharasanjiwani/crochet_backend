@@ -13,4 +13,10 @@ public interface IProductService
     public Task<Result<PagedResult<ProductResDto>>> GetProducts(int pageNumber, int pageSize, Guid userId);
 
     public Task<Result<ProductDetailsResDto?>> GetProductDetailsById(Guid id);
+
+    public Task<Result<List<CommentResponseDto>?>> GetProductCommentsById(Guid id);
+
+    public Task<Result<String?>> CreateLikeOnProduct(CreateLikeReqDto request, Guid id);
+
+    public Task<Result<CreateCommentResDto?>> CreateCommentOnProduct(CreateCommentReqDto request, Guid id);
 }

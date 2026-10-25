@@ -160,4 +160,84 @@ public class ProductService(AppDbContext context,IMapper mapper, IImageService i
         );
         return Result<ProductDetailsResDto?>.Success(product);
     }
+
+    public async Task<Result<List<CommentResponseDto>?>> GetProductCommentsById(Guid id)
+    {
+        var commentList = await context.ProductReviews
+            .Where(r => r.ProductId == id && r.Comment != null)
+            .Select(r => new CommentResponseDto
+            {
+                Name = r.User.Name,
+                ProfileImage = r.User.ProfileImage,
+                Comment = r.Comment!
+            })
+            .ToListAsync();
+
+        if(commentList is null)
+        {
+            logger.LogWarning(
+                "Get Comment list of Product Failed. Product Id: {@productId} Response: Comments not Found",
+                id
+            );
+            return Result<List<CommentResponseDto>?>.Failure("Not Found", ErrorType.NotFound);
+        }
+
+        logger.LogInformation(
+            "Get Comment list of Product Success. Product Id: {@productId}",
+            id
+        );
+
+        return Result<List<CommentResponseDto>?>.Success(commentList);
+    }
+
+    public async Task<Result<String?>> CreateLikeOnProduct(CreateLikeReqDto request, Guid id)
+    {
+        var review = new ProductReviewEntity
+        {
+            UserId = id,
+            ProductId = request.ProductId,
+            IsLiked = request.IsLiked
+        };
+
+        context.ProductReviews.Add(review);
+        await context.SaveChangesAsync();
+
+        logger.LogInformation(
+            "User Liked on Product Success. User Id: {@userId} Product Id: {@productId}",
+            id,
+            request.ProductId
+        );
+        return Result<String?>.Success("Liked Created Successfully");
+    }
+
+    public async Task<Result<CreateCommentResDto?>> CreateCommentOnProduct(CreateCommentReqDto request, Guid id)
+    {
+        var review = new ProductReviewEntity
+        {
+            UserId = id,
+            ProductId = (Guid)request.ProductId!,
+            Comment = request.Comment
+        };
+
+        context.ProductReviews.Add(review);
+        await context.SaveChangesAsync();
+
+        logger.LogInformation(
+            "User Commented on Product Success. User Id: {@userId} Product Id: {@productId}",
+            id,
+            request.ProductId
+        );
+
+        var response = await context.Users
+            .Where(u => u.Id == id)
+            .Select(u => new CreateCommentResDto
+            {
+                ProductId = (Guid)request.ProductId,
+                Comment = request.Comment!,
+                Name = u.Name,
+                ProfileUrl = u.ProfileImage
+            })
+            .FirstOrDefaultAsync();
+        return Result<CreateCommentResDto?>.Success(response);
+    }
 }
