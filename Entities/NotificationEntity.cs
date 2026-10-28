@@ -6,7 +6,8 @@ namespace CrochetWorldApi.Entities;
 public class NotificationEntity : BaseEntity
 {
     public Guid Id { get; set; }
-    public required int UserId { get; set; }
+    public required Guid UserId { get; set; }
+    public UserEntity User { get; set;} = null!;
     public required string Title { get; set; }
     public required string Description { get; set; }
     public required bool IsRead { get; set; }

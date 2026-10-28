@@ -1,0 +1,2 @@
+2026-10-28 10:23:05.801 +05:30 [ERR] An error occurred using the connection to database 'crochetdb_dev' on server 'tcp://localhost:5433'.
+2026-10-28 10:27:47.738 +05:30 [INF] Failed to register user with type "Seller"

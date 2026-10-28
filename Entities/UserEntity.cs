@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using CrochetWorldApi.Enums;
 
 namespace CrochetWorldApi.Entities;
 
@@ -8,7 +9,7 @@ public class UserEntity : BaseEntity
     public Guid Id { get; set; }
     public required string Name { get; set; }
     public string? ShopName { get; set; }
-    public required string Role { get; set; }
+    public required UserType UserType { get; set; }
     public required string Email { get; set; }
     public string? Location { get; set; }
     public string? MobileNumber { get; set; }
@@ -26,4 +27,7 @@ public class UserEntity : BaseEntity
 
     public ICollection<OrderEntity> BuyerOrders { get; set; }
         = new List<OrderEntity>();
+
+    public ICollection<NotificationEntity> Notifications { get; set; }
+        = new List<NotificationEntity>();
 }

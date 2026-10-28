@@ -195,8 +195,8 @@ public class ProductService(AppDbContext context,IMapper mapper, IImageService i
         var review = new ProductReviewEntity
         {
             UserId = id,
-            ProductId = request.ProductId,
-            IsLiked = request.IsLiked
+            ProductId = (Guid)request.ProductId!,
+            IsLiked = (bool)request.IsLiked!
         };
 
         context.ProductReviews.Add(review);

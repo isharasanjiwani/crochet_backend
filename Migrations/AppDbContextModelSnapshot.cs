@@ -50,10 +50,12 @@ namespace CrochetWorldApi.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("notifications");
                 });
@@ -252,10 +254,6 @@ namespace CrochetWorldApi.Migrations
                     b.Property<DateTime?>("RefreshTokenExpiryTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("ShopName")
                         .HasColumnType("text");
 
@@ -265,9 +263,24 @@ namespace CrochetWorldApi.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("UserType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.ToTable("users");
+                });
+
+            modelBuilder.Entity("CrochetWorldApi.Entities.NotificationEntity", b =>
+                {
+                    b.HasOne("CrochetWorldApi.Entities.UserEntity", "User")
+                        .WithMany("Notifications")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("CrochetWorldApi.Entities.OrderEntity", b =>
@@ -410,6 +423,8 @@ namespace CrochetWorldApi.Migrations
             modelBuilder.Entity("CrochetWorldApi.Entities.UserEntity", b =>
                 {
                     b.Navigation("BuyerOrders");
+
+                    b.Navigation("Notifications");
 
                     b.Navigation("ProductReviews");
 

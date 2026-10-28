@@ -18,7 +18,7 @@ public class AuthService(AppDbContext context, IConfiguration configuration, ILo
     {
         try
         {
-            if(await context.Users.AnyAsync(u => u.Email == request.Email && u.Role == request.Role))
+            if(await context.Users.AnyAsync(u => u.Email == request.Email && u.UserType == request.UserType))
             {
                 return null;
             }
@@ -28,7 +28,7 @@ public class AuthService(AppDbContext context, IConfiguration configuration, ILo
                 Id = Guid.NewGuid(),
                 Name = request.Name,
                 ShopName = request.ShopName,
-                Role = request.Role,
+                UserType = request.UserType,
                 Email = request.Email,
                 Location = request.Location,
                 MobileNumber = request.MobileNumber,
@@ -54,7 +54,7 @@ public class AuthService(AppDbContext context, IConfiguration configuration, ILo
 
             logger.LogInformation(
                 "Failed to register user with type {UserType}",
-                request.Role
+                request.UserType
             );
 
             return await CreateTokenResponse(user);
@@ -63,7 +63,7 @@ public class AuthService(AppDbContext context, IConfiguration configuration, ILo
             logger.LogError(
                 ex,
                 "Failed to register user with type {UserType}",
-                request.Role
+                request.UserType
             );
             throw;
         }
@@ -72,7 +72,7 @@ public class AuthService(AppDbContext context, IConfiguration configuration, ILo
     public async Task<UserResponseDto?> LoginUserAsync(LoginUserRequestDto request)
     {
         var user = await context.Users
-            .FirstOrDefaultAsync(u => u.Email == request.Email && u.Role == request.Role);
+            .FirstOrDefaultAsync(u => u.Email == request.Email && u.UserType == request.UserType);
         if(user is null)
         {
             return null;
@@ -101,7 +101,7 @@ public class AuthService(AppDbContext context, IConfiguration configuration, ILo
         return new UserResponseDto
         {
             UserId = user.Id,
-            Role = user.Role,
+            UserType = user.UserType,
             AccessToken = CreateToken(user),
             RefreshToken = await GenerateAndSaveRefreshTokenAsync(user)
         };
@@ -141,7 +141,7 @@ public class AuthService(AppDbContext context, IConfiguration configuration, ILo
         {
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Role, user.Role)
+            new Claim(ClaimTypes.Role, user.UserType.ToString())
         };
 
         var key = new SymmetricSecurityKey(

@@ -53,7 +53,9 @@ public class AppDbContext : DbContext
             .OwnsMany(p => p.Specifications, b => b.ToJson());
 
         modelBuilder.Entity<UserEntity>()
-            .OwnsOne(p => p.BankDetails, b => b.ToJson());
+            .OwnsOne(p => p.BankDetails, b => b.ToJson())
+            .Property(u => u.UserType)
+            .HasConversion<string>();
 
         modelBuilder.Entity<OrderEntity>()
             .OwnsMany(p => p.OrderDetails, b => b.ToJson());
