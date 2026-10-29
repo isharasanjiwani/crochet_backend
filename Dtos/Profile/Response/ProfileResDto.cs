@@ -1,7 +1,9 @@
 using System;
+using System.Text.Json.Serialization;
 
 namespace CrochetWorldApi.Dtos.Profile.Response;
 
+[JsonDerivedType(typeof(SellerProfileResDto), "seller")]
 public class BaseProfileResDto
 {
     public Guid Id { get; set; }
