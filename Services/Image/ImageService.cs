@@ -1,4 +1,5 @@
 using System;
+using CrochetWorldApi.Entities;
 
 namespace CrochetWorldApi.Services.Image;
 
@@ -11,10 +12,10 @@ public class ImageService : IImageService
         _environment = environment;
     }
 
-    public async Task<List<string>> SaveProductImagesAsync(
+    public async Task<List<ImageData>> SaveProductImagesAsync(
         IEnumerable<IFormFile> images)
     {
-        var imageUrls = new List<string>();
+        var imageUrls = new List<ImageData>();
 
         var folderPath = Path.Combine(
             _environment.WebRootPath,
@@ -50,7 +51,14 @@ public class ImageService : IImageService
             await image.CopyToAsync(stream);
 
             // Store the relative URL in PostgreSQL.
-            imageUrls.Add($"/images/products/{fileName}");
+            var newImage = new ImageData
+            {
+                Id = Guid.NewGuid(),
+                Url = $"/images/products/{fileName}"
+            };
+            imageUrls.Add(newImage);
+
+            Console.WriteLine(newImage.Id);
         }
 
         return imageUrls;

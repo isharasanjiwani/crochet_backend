@@ -1,5 +1,6 @@
 using System;
 using AutoMapper;
+using CrochetWorldApi.Dtos.Common.Response;
 using CrochetWorldApi.Dtos.Product.Request;
 using CrochetWorldApi.Dtos.Product.Response;
 using CrochetWorldApi.Entities;
@@ -35,5 +36,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ImageUrls, opt => opt.Ignore());
 
         CreateMap<ProductEntity, ProductResDto>();
+
+        CreateMap<ImageData, ImageDataRes>();
     }
 }

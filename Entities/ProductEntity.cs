@@ -12,7 +12,7 @@ public class ProductEntity : BaseEntity
     public string? Description { get; set; }
     public string? Material { get; set; }
     public required bool IsHandMade { get; set; }
-    public required List<string> Images { get; set; }
+    public required List<ImageData> Images { get; set; }
     public required string Type { get; set; }
     public required int Quantity { get; set; }
     public List<string>? Colors { get; set; }

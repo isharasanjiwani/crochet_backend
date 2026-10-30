@@ -50,7 +50,8 @@ public class AppDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<ProductEntity>()
-            .OwnsMany(p => p.Specifications, b => b.ToJson());
+            .OwnsMany(p => p.Specifications, b => b.ToJson())
+            .OwnsMany(p => p.Images, b => b.ToJson());
 
         modelBuilder.Entity<UserEntity>()
             .OwnsOne(p => p.BankDetails, b => b.ToJson())

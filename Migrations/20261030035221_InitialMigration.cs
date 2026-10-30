@@ -72,7 +72,6 @@ namespace CrochetWorldApi.Migrations
                     Description = table.Column<string>(type: "text", nullable: true),
                     Material = table.Column<string>(type: "text", nullable: true),
                     IsHandMade = table.Column<bool>(type: "boolean", nullable: false),
-                    Images = table.Column<List<string>>(type: "text[]", nullable: false),
                     Type = table.Column<string>(type: "text", nullable: false),
                     Quantity = table.Column<int>(type: "integer", nullable: false),
                     Colors = table.Column<List<string>>(type: "text[]", nullable: true),
@@ -84,6 +83,7 @@ namespace CrochetWorldApi.Migrations
                     IsAvailable = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Images = table.Column<string>(type: "jsonb", nullable: true),
                     Specifications = table.Column<string>(type: "jsonb", nullable: true)
                 },
                 constraints: table =>

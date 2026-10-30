@@ -33,18 +33,17 @@ public class ProductService(AppDbContext context,IMapper mapper, IImageService i
             request.Images);
 
         var product = mapper.Map<ProductEntity>(request);
-        List<Specification> specificationsList = new();
-        if (!string.IsNullOrEmpty(request.Specifications))
+
+        List<ProductSpecification> convertedSpecifications = new List<ProductSpecification>();
+
+        if(request.Specifications is not null)
         {
-            specificationsList = JsonSerializer.Deserialize<List<Specification>>(request.Specifications, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            }) ?? new();
+            convertedSpecifications =  ConvertProductSpecification(request.Specifications);
         }
-        
+
         product.UserId = userId;
         product.Images = imageUrls;
-        product.Specifications = mapper.Map<List<ProductSpecification>>(specificationsList);
+        product.Specifications = convertedSpecifications;
         product.RatingCount = 0;
         product.AverageRating = 0m;
 
@@ -83,7 +82,7 @@ public class ProductService(AppDbContext context,IMapper mapper, IImageService i
                 Id = p.Id,
                 Name = p.Name,
                 IsHandMade = p.IsHandMade,
-                ImageUrl = p.Images[0],
+                ImageUrl = mapper.Map<ImageDataRes>(p.Images[0]),
                 ProfileImageUrl = p.User.ProfileImage,
                 ShopName = p.User.ShopName ?? "",
                 Price = p.Price
@@ -139,9 +138,10 @@ public class ProductService(AppDbContext context,IMapper mapper, IImageService i
                 Price = p.Price ?? 0,
                 Specifications = mapper.Map<List<Specification>>(p.Specifications),
                 IsHandMade = p.IsHandMade,
-                ImageUrls = p.Images,
+                ImageUrls = mapper.Map<List<ImageDataRes>>(p.Images),
                 ProfileImageUrl = p.User.ProfileImage,
-                ShopName = p.User.ShopName
+                ShopName = p.User.ShopName,
+                Quantity = p.Quantity
             })
             .FirstOrDefaultAsync();
 
@@ -239,5 +239,151 @@ public class ProductService(AppDbContext context,IMapper mapper, IImageService i
             })
             .FirstOrDefaultAsync();
         return Result<CreateCommentResDto?>.Success(response);
+    }
+
+    public async Task<Result<PagedResult<MyProductResDto>>> GetMyProducts(int pageNumber, int pageSize, Guid userId)
+    {
+        if (pageNumber < 1 || pageSize < 1 || pageSize > 100)
+        {
+            return Result<PagedResult<MyProductResDto>>.Failure(
+                "Invalid pagination parameters.", 
+                ErrorType.Validation
+            );
+        }
+
+        var query = context.Products.AsNoTracking();
+
+        var totalCount = await query.CountAsync();
+
+        var products = await query
+            .OrderBy(p => p.CreatedAt)
+            .ThenBy(p => p.Id)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .Select(p => new MyProductResDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                IsHandMade = p.IsHandMade,
+                ImageUrl = mapper.Map<ImageDataRes>(p.Images[0]),
+                Price = p.Price
+                    ?? (p.Specifications != null && p.Specifications.Any()
+                    ? p.Specifications.First().Price
+                    : 0m),
+                LikeCount = p.Reviews.Count(r => r.IsLiked),
+                CommentCount = p.Reviews.Count(r => r.Comment != null)
+            })
+            .ToListAsync();
+
+        if(totalCount == 0)
+        {
+            logger.LogWarning(
+                "Get my products Data. User: {@UserId} Response: Products not Found",
+                userId
+            );
+            return Result<PagedResult<MyProductResDto>>.Failure(
+                "Products not Found", 
+                ErrorType.NotFound
+            );
+        } 
+        else
+        {
+            logger.LogWarning(
+                "Get my products Data. User: {@UserId} Response: Products count: {@totalCount}",
+                userId,
+                totalCount
+            );
+            return Result<PagedResult<MyProductResDto>>.Success(
+                new PagedResult<MyProductResDto>
+                {
+                    Items = products,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    TotalCount = totalCount,
+                }
+            );
+        }
+    }
+
+    public async Task<Result<string?>> EditMyProduct(EditProductReqDto request, Guid id)
+    {
+        var productData = await context.Products
+            .Where(p => p.Id == request.Id && p.UserId == id)
+            .FirstOrDefaultAsync();
+
+        if(productData is null)
+        {
+            logger.LogWarning(
+                "Updated Product Data. User Id: {@userId}. Product Id: {@productId}. Response: Failed. Product not Found",
+                id,
+                request.Id
+            );
+            return Result<string?>.Failure("Product not Found", ErrorType.NotFound);
+        }
+
+        var imagesCount = (productData.Images.Count - request.DeletedImages?.Count ?? 0) + request.Images?.Count ?? 0;
+        if(imagesCount > 3)
+        {
+            logger.LogWarning(
+                "Updated Product Data. User Id: {@userId}. Product Id: {@productId}. Response: Failed. Uploaded {@imagesCount} Images",
+                id,
+                request.Id,
+                imagesCount
+            );
+            return Result<string?>.Failure("Maximum image count is 3", ErrorType.Validation);
+        }
+
+        if(request.Name is not null) productData.Name = request.Name;
+        if(request.Description is not null) productData.Description = request.Description;
+        if(request.IsHandMade is not null) productData.IsHandMade = (bool)request.IsHandMade;
+        if(request.Type is not null) productData.Type = request.Type;
+        if(request.Quantity is not null) productData.Quantity = (int)request.Quantity;
+        if(request.Colors is not null) productData.Colors = request.Colors;
+        if(request.Sizes is not null) productData.Sizes = request.Sizes;
+        if(request.Material is not null) productData.Material = request.Material;
+        if(request.Price is not null) productData.Price = request.Price;
+        if(request.Specifications is not null)
+        {
+            List<ProductSpecification> convertedSpecifications = new List<ProductSpecification>();
+
+            productData.Specifications =  ConvertProductSpecification(request.Specifications);
+        }
+        if(request.DeliveryFee is not null) productData.DeliveryFee = (decimal)request.DeliveryFee;
+        if(request.DeletedImages is not null)
+        {
+            productData.Images.RemoveAll(image => request.DeletedImages.Contains(image.Id));
+        }
+
+        if(request.Images is not null)
+        {
+            var imageUrls = await imageService.SaveProductImagesAsync(request.Images);
+            productData.Images.AddRange(imageUrls);
+        }
+
+        await context.SaveChangesAsync();
+
+        logger.LogInformation(
+            "Updated Product data. User Id: {@userId}. Product Id: {@productId}. Response: Success",
+            id,
+            request.Id
+        );
+
+        return Result<string?>.Success("Profile Product Successfully");
+    }
+
+    private List<ProductSpecification> ConvertProductSpecification(string Specifications)
+    {
+        List<Specification> specificationsList = new();
+        if (!string.IsNullOrEmpty(Specifications))
+        {
+            specificationsList = JsonSerializer.Deserialize<List<Specification>>(Specifications, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? new();
+        }
+
+        List<ProductSpecification> convertedList =  mapper.Map<List<ProductSpecification>>(specificationsList);
+
+        return convertedList;
     }
 }

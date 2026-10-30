@@ -110,5 +110,40 @@ namespace CrochetWorldApi.Controllers
 
             return Ok(result);
         }
+
+        [HttpGet("/my")]
+        [Authorize]
+        public async Task<ActionResult> GetMyProducts([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            var stringValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool success = Guid.TryParse(stringValue, out Guid userId);
+            if(!success)
+            {
+                return Unauthorized();
+            }
+            var result = await productService.GetMyProducts(pageNumber, pageSize, userId);
+
+            if(!result.IsSuccess)
+                return HandleResult(result);
+
+            return Ok(result.Data);
+        }
+
+        [HttpPost("edit")]
+        public async Task<ActionResult> EditMyProduct([FromForm] EditProductReqDto request)
+        {
+            var stringValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool success = Guid.TryParse(stringValue, out Guid userId);
+            if(!success)
+            {
+                return Unauthorized();
+            }
+            var result = await productService.EditMyProduct(request, userId);
+
+            if(!result.IsSuccess)
+                return HandleResult(result);
+
+            return Ok(result.Data);
+        }
     }
 }

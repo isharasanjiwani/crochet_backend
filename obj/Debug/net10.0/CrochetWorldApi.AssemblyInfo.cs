@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CrochetWorldApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7e54ec1cf9a038124ccd6ec3cefbb471bc8303e7")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a513a04c654d7662ccc7f7080fd047c40729322c")]
 [assembly: System.Reflection.AssemblyProductAttribute("CrochetWorldApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CrochetWorldApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

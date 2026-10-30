@@ -133,10 +133,6 @@ namespace CrochetWorldApi.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.PrimitiveCollection<List<string>>("Images")
-                        .IsRequired()
-                        .HasColumnType("text[]");
-
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("boolean");
 
@@ -337,6 +333,30 @@ namespace CrochetWorldApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.OwnsMany("CrochetWorldApi.Entities.ImageData", "Images", b1 =>
+                        {
+                            b1.Property<Guid>("ProductEntityId");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd();
+
+                            b1.Property<Guid>("Id");
+
+                            b1.Property<string>("Url")
+                                .IsRequired();
+
+                            b1.HasKey("ProductEntityId", "__synthesizedOrdinal");
+
+                            b1.ToTable("products");
+
+                            b1
+                                .ToJson("Images")
+                                .HasColumnType("jsonb");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ProductEntityId");
+                        });
+
                     b.OwnsMany("ProductSpecification", "Specifications", b1 =>
                         {
                             b1.Property<Guid>("ProductEntityId");
@@ -361,6 +381,8 @@ namespace CrochetWorldApi.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("ProductEntityId");
                         });
+
+                    b.Navigation("Images");
 
                     b.Navigation("Specifications");
 

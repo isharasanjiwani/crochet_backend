@@ -1,3 +1,5 @@
+using CrochetWorldApi.Dtos.Common.Response;
+
 namespace CrochetWorldApi.Dtos.Product.Response;
 
 public class ProductDetailsResDto
@@ -9,7 +11,8 @@ public class ProductDetailsResDto
     public decimal Price { get; set; }
     public List<Specification>? Specifications { get; set; }
     public required bool IsHandMade { get; set; }
-    public required List<string> ImageUrls { get; set; }
+    public required List<ImageDataRes> ImageUrls { get; set; }
     public string? ProfileImageUrl { get; set; }
     public string? ShopName { get; set; }
+    public int Quantity { get; set; }
 }
