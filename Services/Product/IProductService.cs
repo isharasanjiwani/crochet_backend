@@ -22,4 +22,6 @@ public interface IProductService
 
     public Task<Result<PagedResult<MyProductResDto>>> GetMyProducts(int pageNumber, int pageSize, Guid userId);
     public Task<Result<string?>> EditMyProduct(EditProductReqDto request, Guid id);
+
+    public Task<Result<string?>> DeleteMyProduct(Guid id, Guid userId);
 }

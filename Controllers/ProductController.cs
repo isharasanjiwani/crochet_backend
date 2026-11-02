@@ -130,6 +130,7 @@ namespace CrochetWorldApi.Controllers
         }
 
         [HttpPost("edit")]
+        [Authorize(Roles = "Seller")]
         public async Task<ActionResult> EditMyProduct([FromForm] EditProductReqDto request)
         {
             var stringValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -144,6 +145,24 @@ namespace CrochetWorldApi.Controllers
                 return HandleResult(result);
 
             return Ok(result.Data);
+        }
+
+        [HttpDelete("delete/:id")]
+        [Authorize(Roles = "Seller")]
+        public async Task<ActionResult> DeleteMyProduct(Guid id)
+        {
+            var stringValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool success = Guid.TryParse(stringValue, out Guid userId);
+            if(!success)
+            {
+                return Unauthorized();
+            }
+            var result = await productService.DeleteMyProduct(id, userId);
+
+            if(!result.IsSuccess)
+                return HandleResult(result);
+
+            return Ok(result);
         }
     }
 }

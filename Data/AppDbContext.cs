@@ -59,6 +59,8 @@ public class AppDbContext : DbContext
             .HasConversion<string>();
 
         modelBuilder.Entity<OrderEntity>()
-            .OwnsMany(p => p.OrderDetails, b => b.ToJson());
+            .OwnsMany(p => p.OrderDetails, b => b.ToJson())
+            .Property(o => o.Status)
+            .HasConversion<string>();
     }
 }

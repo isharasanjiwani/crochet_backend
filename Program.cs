@@ -6,6 +6,7 @@ using CrochetWorldApi.Services.Auth;
 using CrochetWorldApi.Services.General;
 using CrochetWorldApi.Services.Image;
 using CrochetWorldApi.Services.Notification;
+using CrochetWorldApi.Services.Orders;
 using CrochetWorldApi.Services.Product;
 using CrochetWorldApi.Services.Profile;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -123,6 +124,7 @@ builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<IGeneralService, GeneralService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 
 var app = builder.Build();
 

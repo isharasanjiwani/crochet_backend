@@ -29,7 +29,7 @@ public class ProductService(AppDbContext context,IMapper mapper, IImageService i
             
         //TODO: check the product image is AI generated
         //TODO: check the product is handmade or not
-        var imageUrls = await imageService.SaveProductImagesAsync(
+        var imageUrls = await imageService.SaveImagesAsync(
             request.Images);
 
         var product = mapper.Map<ProductEntity>(request);
@@ -356,7 +356,7 @@ public class ProductService(AppDbContext context,IMapper mapper, IImageService i
 
         if(request.Images is not null)
         {
-            var imageUrls = await imageService.SaveProductImagesAsync(request.Images);
+            var imageUrls = await imageService.SaveImagesAsync(request.Images);
             productData.Images.AddRange(imageUrls);
         }
 
@@ -369,6 +369,34 @@ public class ProductService(AppDbContext context,IMapper mapper, IImageService i
         );
 
         return Result<string?>.Success("Profile Product Successfully");
+    }
+
+    public async Task<Result<string?>> DeleteMyProduct(Guid id, Guid userId)
+    {
+        var productData = await context.Products
+            .Where(p => p.Id == id && p.UserId == userId)
+            .FirstOrDefaultAsync();
+
+        if(productData is null)
+        {
+            logger.LogWarning(
+                "Delete Product Data. Product Id: {@productId}. User Id: {@userId}. Response: Failed. Product not Found",
+                id,
+                userId
+            );
+            return Result<string?>.Failure("Product not Found", ErrorType.NotFound);
+        }
+
+        context.Products.Remove(productData);
+        await context.SaveChangesAsync();
+
+        logger.LogInformation(
+            "Deleted Product data. Product Id: {@productId}. User Id: {@userId}. Response: Success",
+            id,
+            userId
+        );
+
+        return Result<string?>.Success("Product Deleted Successfully");
     }
 
     private List<ProductSpecification> ConvertProductSpecification(string Specifications)
