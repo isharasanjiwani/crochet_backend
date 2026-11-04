@@ -12,5 +12,13 @@ public interface IOrderService
     public Task<Result<string?>> CreateOrder(CreateOrderReq request, Guid userId);
 
     public Task<Result<PagedResult<SellerOrderRes>>> GetSellerOrders(OrderStatus? status, int pageNumber, int pageSize, Guid userId);
+
+    public Task<Result<SellerOrderDetailsRes?>> GetOrderDetailsBySeller(Guid Id);
+
+    public Task<Result<string?>> UpdateOrderStatusBySeller(OrderUpdateReq request);
+
+    public Task<Result<PagedResult<BuyerOrderRes>>> GetOrdersByBuyer(OrderStatus? status, int pageNumber, int pageSize, Guid userId);
+
+    public Task<Result<string?>> UpdateOrderStatusByBuyer(OrderUpdateBuyerReq request, Guid userId);
     
 }
