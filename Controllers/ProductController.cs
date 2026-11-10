@@ -162,7 +162,7 @@ namespace CrochetWorldApi.Controllers
             if(!result.IsSuccess)
                 return HandleResult(result);
 
-            return Ok(result);
+            return NoContent();
         }
     }
 }

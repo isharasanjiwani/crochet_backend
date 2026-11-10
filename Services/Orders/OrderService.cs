@@ -66,7 +66,7 @@ public class OrderService(AppDbContext context, ILogger<OrderService> logger, II
             order.Id
         );
 
-        return Result<string?>.Success("Order created Successfully");
+        return Result<string?>.Success("Order created Successfully", SuccessType.Created);
     }
 
     public async Task<Result<PagedResult<SellerOrderRes>>> GetSellerOrders(OrderStatus? status, int pageNumber, int pageSize, Guid userId)
@@ -130,7 +130,8 @@ public class OrderService(AppDbContext context, ILogger<OrderService> logger, II
                     PageNumber = pageNumber,
                     PageSize = pageSize,
                     TotalCount = totalCount,
-                }
+                },
+                SuccessType.Ok
             );
         }
     }
@@ -175,7 +176,7 @@ public class OrderService(AppDbContext context, ILogger<OrderService> logger, II
             "Get order Details. Order: {@OrderId} Response: Success",
             Id
         );
-        return Result<SellerOrderDetailsRes?>.Success(order);
+        return Result<SellerOrderDetailsRes?>.Success(order, SuccessType.Ok);
     }
 
     public async Task<Result<string?>> UpdateOrderStatusBySeller(OrderUpdateReq request)
@@ -213,7 +214,7 @@ public class OrderService(AppDbContext context, ILogger<OrderService> logger, II
             request.Status
         );
 
-        return Result<string?>.Success("Order status updated successfully");
+        return Result<string?>.Success("Order status updated successfully", SuccessType.NoContent);
     }
 
     public async Task<Result<PagedResult<BuyerOrderRes>>> GetOrdersByBuyer(OrderStatus? status, int pageNumber, int pageSize, Guid userId)
@@ -282,7 +283,8 @@ public class OrderService(AppDbContext context, ILogger<OrderService> logger, II
                     PageNumber = pageNumber,
                     PageSize = pageSize,
                     TotalCount = totalCount,
-                }
+                },
+                SuccessType.Ok
             );
         }
     }
@@ -314,6 +316,6 @@ public class OrderService(AppDbContext context, ILogger<OrderService> logger, II
             request.Status
         );
 
-        return Result<string?>.Success("Order status updated successfully");
+        return Result<string?>.Success("Order status updated successfully", SuccessType.NoContent);
     }
 }

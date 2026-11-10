@@ -1,4 +1,5 @@
 using System.Text;
+using CrochetWorldApi.BackgroundServices;
 using CrochetWorldApi.Data;
 using CrochetWorldApi.Handlers;
 using CrochetWorldApi.Services;
@@ -125,6 +126,12 @@ builder.Services.AddScoped<IGeneralService, GeneralService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+
+builder.Services.AddHostedService<ClearOldRefreshTokenBackgroundService>();
+builder.Services.Configure<HostOptions>(opts =>
+{
+    opts.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
+});
 
 var app = builder.Build();
 

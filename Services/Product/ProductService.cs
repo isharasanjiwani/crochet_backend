@@ -15,7 +15,7 @@ namespace CrochetWorldApi.Services.Product;
 
 public class ProductService(AppDbContext context,IMapper mapper, IImageService imageService, ILogger<ProductService> logger) : IProductService
 {
-    public async Task<Result<string?>> CreateProduct(CreateProductReqDto request, Guid userId)
+    public async Task<Result<ProductResDto?>> CreateProduct(CreateProductReqDto request, Guid userId)
     {
 
         if (request.Images == null || request.Images.Count == 0)
@@ -24,7 +24,7 @@ public class ProductService(AppDbContext context,IMapper mapper, IImageService i
                 "Try to create product without images. User: {@UserId}",
                 userId
             );
-            return Result<string?>.Failure("Images is Required", ErrorType.Validation);
+            return Result<ProductResDto?>.Failure("Images is Required", ErrorType.Validation);
         }
             
         //TODO: check the product image is AI generated
@@ -55,7 +55,24 @@ public class ProductService(AppDbContext context,IMapper mapper, IImageService i
             product
         );
 
-        return Result<string?>.Success("Product created Successfully");
+        var response = new ProductResDto
+        {
+            Id = product.Id,
+            Name = product.Name,
+            IsHandMade = product.IsHandMade,
+            ImageUrl = mapper.Map<ImageDataRes>(product.Images[0]),
+            ProfileImageUrl = product.User.ProfileImage,
+            ShopName = product.User.ShopName ?? "",
+            Price = product.Price
+                ?? (product.Specifications != null && product.Specifications.Any()
+                ? product.Specifications.First().Price
+                : 0m),
+            LikeCount = 0,
+            CommentCount = 0
+            
+        };
+
+        return Result<ProductResDto?>.Success(response, SuccessType.Created);
     }
 
     public async Task<Result<PagedResult<ProductResDto>>> GetProducts(int pageNumber, int pageSize, Guid userId)
@@ -119,7 +136,8 @@ public class ProductService(AppDbContext context,IMapper mapper, IImageService i
                     PageNumber = pageNumber,
                     PageSize = pageSize,
                     TotalCount = totalCount,
-                }
+                },
+                SuccessType.Ok
             );
         }
     }
@@ -158,7 +176,7 @@ public class ProductService(AppDbContext context,IMapper mapper, IImageService i
             "Get product Details. ID : {@id} Response: Successfully send the details",
             id
         );
-        return Result<ProductDetailsResDto?>.Success(product);
+        return Result<ProductDetailsResDto?>.Success(product, SuccessType.Ok);
     }
 
     public async Task<Result<List<CommentResponseDto>?>> GetProductCommentsById(Guid id)
@@ -187,7 +205,7 @@ public class ProductService(AppDbContext context,IMapper mapper, IImageService i
             id
         );
 
-        return Result<List<CommentResponseDto>?>.Success(commentList);
+        return Result<List<CommentResponseDto>?>.Success(commentList, SuccessType.Ok);
     }
 
     public async Task<Result<String?>> CreateLikeOnProduct(CreateLikeReqDto request, Guid id)
@@ -207,7 +225,7 @@ public class ProductService(AppDbContext context,IMapper mapper, IImageService i
             id,
             request.ProductId
         );
-        return Result<String?>.Success("Liked Created Successfully");
+        return Result<String?>.Success("Liked Created Successfully", SuccessType.NoContent);
     }
 
     public async Task<Result<CreateCommentResDto?>> CreateCommentOnProduct(CreateCommentReqDto request, Guid id)
@@ -238,7 +256,7 @@ public class ProductService(AppDbContext context,IMapper mapper, IImageService i
                 ProfileUrl = u.ProfileImage
             })
             .FirstOrDefaultAsync();
-        return Result<CreateCommentResDto?>.Success(response);
+        return Result<CreateCommentResDto?>.Success(response, SuccessType.NoContent);
     }
 
     public async Task<Result<PagedResult<MyProductResDto>>> GetMyProducts(int pageNumber, int pageSize, Guid userId)
@@ -300,7 +318,8 @@ public class ProductService(AppDbContext context,IMapper mapper, IImageService i
                     PageNumber = pageNumber,
                     PageSize = pageSize,
                     TotalCount = totalCount,
-                }
+                },
+                SuccessType.Ok
             );
         }
     }
@@ -368,7 +387,7 @@ public class ProductService(AppDbContext context,IMapper mapper, IImageService i
             request.Id
         );
 
-        return Result<string?>.Success("Profile Product Successfully");
+        return Result<string?>.Success("Profile Product Successfully", SuccessType.NoContent);
     }
 
     public async Task<Result<string?>> DeleteMyProduct(Guid id, Guid userId)
@@ -396,7 +415,7 @@ public class ProductService(AppDbContext context,IMapper mapper, IImageService i
             userId
         );
 
-        return Result<string?>.Success("Product Deleted Successfully");
+        return Result<string?>.Success("Product Deleted Successfully", SuccessType.NoContent);
     }
 
     private List<ProductSpecification> ConvertProductSpecification(string Specifications)

@@ -36,7 +36,7 @@ public class NotificationService(AppDbContext context, ILogger<NotificationServi
             id,
             notificationList.Count
         );
-        return Result<List<NotificationData>?>.Success(notificationList);
+        return Result<List<NotificationData>?>.Success(notificationList, SuccessType.Ok);
     }
 
     public async Task<Result<string?>> NotificationMarkAsRead(Guid id, Guid notificationId)
@@ -63,6 +63,6 @@ public class NotificationService(AppDbContext context, ILogger<NotificationServi
             id,
             notificationId
         );
-        return Result<string?>.Success("Notification mark as Read Successfully");
+        return Result<string?>.Success("Notification mark as Read Successfully", SuccessType.NoContent);
     }
 }
