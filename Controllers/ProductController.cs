@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using CrochetWorldApi.Dtos.Common.Response;
 using CrochetWorldApi.Dtos.Product.Request;
 using CrochetWorldApi.Services.Product;
@@ -15,14 +16,153 @@ namespace CrochetWorldApi.Controllers
     {
         [HttpPost]
         [Authorize(Roles = "Seller")]
-        public async Task<ActionResult> CreateProduct(CreateProductReqDto request)
+        [Consumes("multipart/form-data")]
+        public async Task<ActionResult> CreateProduct([FromForm] CreateProductReqDto request)
         {
-            var result = await productService.CreateProduct(request);
+            var stringValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool success = Guid.TryParse(stringValue, out Guid userId);
+            if(!success)
+            {
+                return Unauthorized();
+            }
+            var result = await productService.CreateProduct(request, userId);
+
+            if(!result.IsSuccess)
+                return HandleResult(result);
+
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<ActionResult> GetProducts([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            var stringValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool success = Guid.TryParse(stringValue, out Guid userId);
+            if(!success)
+            {
+                return Unauthorized();
+            }
+            var result = await productService.GetProducts(pageNumber, pageSize, userId);
 
             if(!result.IsSuccess)
                 return HandleResult(result);
 
             return Ok(result.Data);
+        }
+
+        [HttpGet("details/:id")]
+        [Authorize]
+        public async Task<ActionResult> GetProductDetailsById(Guid id)
+        {
+            var result = await productService.GetProductDetailsById(id);
+
+            if(!result.IsSuccess)
+                return HandleResult(result);
+
+            return Ok(result.Data);
+        }
+
+        [HttpPost("/:id/comment")]   
+        [Authorize]
+        public async Task<ActionResult> CreateCommentOnProduct(CreateCommentReqDto request)
+        {
+            var stringValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool success = Guid.TryParse(stringValue, out Guid userId);
+            if(!success)
+            {
+                return Unauthorized();
+            }
+            var result = await productService.CreateCommentOnProduct(request, userId);
+
+            if(!result.IsSuccess)
+                return HandleResult(result);
+
+            return Ok(result);
+        }
+
+        [HttpGet("/:id/comments")]
+        [Authorize]
+        public async Task<ActionResult> GetProductCommentsById(Guid id)
+        {
+            var result = await productService.GetProductCommentsById(id);
+
+            if(!result.IsSuccess)
+                return HandleResult(result);
+
+            return Ok(result.Data);
+        }
+
+        [HttpPost("/like")]   
+        [Authorize]
+        public async Task<ActionResult> CreateLikeOnProduct(CreateLikeReqDto request)
+        {
+            var stringValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool success = Guid.TryParse(stringValue, out Guid userId);
+            if(!success)
+            {
+                return Unauthorized();
+            }
+            var result = await productService.CreateLikeOnProduct(request, userId);
+
+            if(!result.IsSuccess)
+                return HandleResult(result);
+
+            return Ok(result);
+        }
+
+        [HttpGet("/my")]
+        [Authorize]
+        public async Task<ActionResult> GetMyProducts([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            var stringValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool success = Guid.TryParse(stringValue, out Guid userId);
+            if(!success)
+            {
+                return Unauthorized();
+            }
+            var result = await productService.GetMyProducts(pageNumber, pageSize, userId);
+
+            if(!result.IsSuccess)
+                return HandleResult(result);
+
+            return Ok(result.Data);
+        }
+
+        [HttpPost("edit")]
+        [Authorize(Roles = "Seller")]
+        public async Task<ActionResult> EditMyProduct([FromForm] EditProductReqDto request)
+        {
+            var stringValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool success = Guid.TryParse(stringValue, out Guid userId);
+            if(!success)
+            {
+                return Unauthorized();
+            }
+            var result = await productService.EditMyProduct(request, userId);
+
+            if(!result.IsSuccess)
+                return HandleResult(result);
+
+            return Ok(result.Data);
+        }
+
+        [HttpDelete("delete/:id")]
+        [Authorize(Roles = "Seller")]
+        public async Task<ActionResult> DeleteMyProduct(Guid id)
+        {
+            var stringValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool success = Guid.TryParse(stringValue, out Guid userId);
+            if(!success)
+            {
+                return Unauthorized();
+            }
+            var result = await productService.DeleteMyProduct(id, userId);
+
+            if(!result.IsSuccess)
+                return HandleResult(result);
+
+            return Ok(result);
         }
     }
 }

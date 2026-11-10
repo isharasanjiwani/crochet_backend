@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CrochetWorldApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261022042817_ChangeNaame")]
-    partial class ChangeNaame
+    [Migration("20261030035221_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -53,10 +53,12 @@ namespace CrochetWorldApi.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("notifications");
                 });
@@ -106,6 +108,10 @@ namespace CrochetWorldApi.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("UserId");
+
                     b.ToTable("orders");
                 });
 
@@ -129,10 +135,6 @@ namespace CrochetWorldApi.Migrations
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
-
-                    b.PrimitiveCollection<List<byte[]>>("Images")
-                        .IsRequired()
-                        .HasColumnType("bytea[]");
 
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("boolean");
@@ -166,7 +168,12 @@ namespace CrochetWorldApi.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("products");
                 });
@@ -177,14 +184,17 @@ namespace CrochetWorldApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.PrimitiveCollection<List<string>>("Comments")
-                        .HasColumnType("text[]");
+                    b.Property<string>("Comment")
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("ProductId")
-                        .HasColumnType("integer");
+                    b.Property<bool>("IsLiked")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
 
                     b.Property<decimal?>("Rating")
                         .HasColumnType("numeric");
@@ -192,10 +202,14 @@ namespace CrochetWorldApi.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("product_reviews");
                 });
@@ -230,18 +244,14 @@ namespace CrochetWorldApi.Migrations
                     b.PrimitiveCollection<List<string>>("PaymentMethods")
                         .HasColumnType("text[]");
 
-                    b.Property<byte[]>("ProfileImage")
-                        .HasColumnType("bytea");
+                    b.Property<string>("ProfileImage")
+                        .HasColumnType("text");
 
                     b.Property<string>("RefreshToken")
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("RefreshTokenExpiryTime")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<string>("ShopName")
                         .HasColumnType("text");
@@ -252,13 +262,40 @@ namespace CrochetWorldApi.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("UserType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.ToTable("users");
                 });
 
+            modelBuilder.Entity("CrochetWorldApi.Entities.NotificationEntity", b =>
+                {
+                    b.HasOne("CrochetWorldApi.Entities.UserEntity", "User")
+                        .WithMany("Notifications")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("CrochetWorldApi.Entities.OrderEntity", b =>
                 {
+                    b.HasOne("CrochetWorldApi.Entities.ProductEntity", "Product")
+                        .WithMany("Orders")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CrochetWorldApi.Entities.UserEntity", "User")
+                        .WithMany("BuyerOrders")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.OwnsMany("OrderDetails", "OrderDetails", b1 =>
                         {
                             b1.Property<Guid>("OrderEntityId");
@@ -285,10 +322,44 @@ namespace CrochetWorldApi.Migrations
                         });
 
                     b.Navigation("OrderDetails");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("CrochetWorldApi.Entities.ProductEntity", b =>
                 {
+                    b.HasOne("CrochetWorldApi.Entities.UserEntity", "User")
+                        .WithMany("Products")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsMany("CrochetWorldApi.Entities.ImageData", "Images", b1 =>
+                        {
+                            b1.Property<Guid>("ProductEntityId");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd();
+
+                            b1.Property<Guid>("Id");
+
+                            b1.Property<string>("Url")
+                                .IsRequired();
+
+                            b1.HasKey("ProductEntityId", "__synthesizedOrdinal");
+
+                            b1.ToTable("products");
+
+                            b1
+                                .ToJson("Images")
+                                .HasColumnType("jsonb");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ProductEntityId");
+                        });
+
                     b.OwnsMany("ProductSpecification", "Specifications", b1 =>
                         {
                             b1.Property<Guid>("ProductEntityId");
@@ -314,7 +385,30 @@ namespace CrochetWorldApi.Migrations
                                 .HasForeignKey("ProductEntityId");
                         });
 
+                    b.Navigation("Images");
+
                     b.Navigation("Specifications");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("CrochetWorldApi.Entities.ProductReviewEntity", b =>
+                {
+                    b.HasOne("CrochetWorldApi.Entities.ProductEntity", "Product")
+                        .WithMany("Reviews")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CrochetWorldApi.Entities.UserEntity", "User")
+                        .WithMany("ProductReviews")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("CrochetWorldApi.Entities.UserEntity", b =>
@@ -342,6 +436,24 @@ namespace CrochetWorldApi.Migrations
                         });
 
                     b.Navigation("BankDetails");
+                });
+
+            modelBuilder.Entity("CrochetWorldApi.Entities.ProductEntity", b =>
+                {
+                    b.Navigation("Orders");
+
+                    b.Navigation("Reviews");
+                });
+
+            modelBuilder.Entity("CrochetWorldApi.Entities.UserEntity", b =>
+                {
+                    b.Navigation("BuyerOrders");
+
+                    b.Navigation("Notifications");
+
+                    b.Navigation("ProductReviews");
+
+                    b.Navigation("Products");
                 });
 #pragma warning restore 612, 618
         }

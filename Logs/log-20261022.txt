@@ -1,1 +1,0 @@
-2026-10-22 09:58:28 [Error] An error occurred using the connection to database '"crochetdb_dev"' on server '"tcp://localhost:5433"'.

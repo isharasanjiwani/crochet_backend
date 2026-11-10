@@ -5,9 +5,11 @@ namespace CrochetWorldApi.Dtos.Product.Request;
 
 public class CreateProductReqDto
 {
-    [Required]
+    [Required(ErrorMessage = "Name is required.")]
+    [StringLength(50, MinimumLength = 3)]
     public required string Name { get; set; }
 
+    [MaxLength(200)]
     public string? Description { get; set; }
 
     [Required]
@@ -16,10 +18,11 @@ public class CreateProductReqDto
     [Required]
     public required bool IsHandMade { get; set;}
 
-    [Required]
+    [Required(ErrorMessage = "type is required.")]
     public required string Type { get; set; }
 
-    [Required]
+    [Required(ErrorMessage = "Quantity is required.")]
+    [Range(1, 100)]
     public required int Quantity { get; set; }
 
     public List<string>? Colors { get; set; }
@@ -30,7 +33,7 @@ public class CreateProductReqDto
 
     public decimal? Price { get; set; }
 
-    public List<Specification>? Specifications { get; set; }
+    public string? Specifications { get; set; }
 
     [Required]
     public required decimal DeliveryFee { get; set; }
