@@ -11,7 +11,14 @@ namespace CrochetWorldApi.Controllers
         {
             if (result.IsSuccess)
             {
-                return Ok(result.Data);
+                return result.SuccessType switch
+                {
+                    SuccessType.Ok => Ok(result.Data),
+                    SuccessType.Created => Created(string.Empty, result.Data),
+                    SuccessType.NoContent => NoContent(),
+                    SuccessType.Accepted => Accepted(result.Data),
+                    _ => StatusCode(500, new { message = "An unexpected error occurred." })
+                };
             }
 
             return result.ErrorType switch

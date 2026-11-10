@@ -23,4 +23,5 @@ public class OrderEntity : BaseEntity
     public required List<OrderDetails> OrderDetails { get; set; }
     public required OrderStatus Status { get; set; }
     public DateTime EstimatedDelivery { get; set; }
+    public string? TrackingNumber { get; set; }
 }

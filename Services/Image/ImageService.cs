@@ -12,7 +12,7 @@ public class ImageService : IImageService
         _environment = environment;
     }
 
-    public async Task<List<ImageData>> SaveProductImagesAsync(
+    public async Task<List<ImageData>> SaveImagesAsync(
         IEnumerable<IFormFile> images)
     {
         var imageUrls = new List<ImageData>();
@@ -62,5 +62,48 @@ public class ImageService : IImageService
         }
 
         return imageUrls;
+    }
+
+    public async Task<ImageData> SaveImageAsync(IFormFile image)
+    {
+        var folderPath = Path.Combine(
+            _environment.WebRootPath,
+            "images",
+            "products");
+
+        Directory.CreateDirectory(folderPath);
+
+        var extension = Path.GetExtension(image.FileName)
+                .ToLowerInvariant();
+
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+
+        if (!allowedExtensions.Contains(extension))
+                throw new InvalidOperationException(
+                    "Unsupported image format.");
+
+        var fileName = $"{Guid.NewGuid()}{extension}";
+
+        var filePath = Path.Combine(folderPath, fileName);
+
+        await using var stream = new FileStream(
+                filePath,
+                FileMode.CreateNew);
+
+            await image.CopyToAsync(stream);
+
+        var newImage = new ImageData
+            {
+                Id = Guid.NewGuid(),
+                Url = $"/images/products/{fileName}"
+            };
+
+        var imageUrl = new ImageData
+        {
+            Id = newImage.Id,
+            Url = newImage.Url
+        };
+
+        return imageUrl;
     }
 }

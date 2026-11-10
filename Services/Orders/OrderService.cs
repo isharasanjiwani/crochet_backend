@@ -66,7 +66,7 @@ public class OrderService(AppDbContext context, ILogger<OrderService> logger, II
             order.Id
         );
 
-        return Result<string?>.Success("Order created Successfully");
+        return Result<string?>.Success("Order created Successfully", SuccessType.Created);
     }
 
     public async Task<Result<PagedResult<SellerOrderRes>>> GetSellerOrders(OrderStatus? status, int pageNumber, int pageSize, Guid userId)
@@ -79,7 +79,7 @@ public class OrderService(AppDbContext context, ILogger<OrderService> logger, II
             );
         }
 
-        var query = context.Orders.AsNoTracking();
+        var query = context.Orders.AsNoTracking().Where(o => o.Product.UserId == userId);
 
         if (status != null)
         {
@@ -130,8 +130,192 @@ public class OrderService(AppDbContext context, ILogger<OrderService> logger, II
                     PageNumber = pageNumber,
                     PageSize = pageSize,
                     TotalCount = totalCount,
-                }
+                },
+                SuccessType.Ok
             );
         }
+    }
+
+    public async Task<Result<SellerOrderDetailsRes?>> GetOrderDetailsBySeller(Guid Id)
+    {
+        var order = await context.Orders
+            .AsNoTracking()
+            .Where(o => o.Id == Id)
+            .Select(o => new SellerOrderDetailsRes
+            {
+                Id = o.Id,
+                OrderNumber = o.OrderNumber,
+                Quantity = o.Quantity,
+                BuyerName = o.User.Name,
+                BuyerProfileImage = o.User.ProfileImage,
+                MobileNumber = o.MobileNumber,
+                Address = o.Address,
+                ProductId = o.Product.ProductId,
+                ProductName = o.Product.Name,
+                PaymentMethod = o.PaymentMethod,
+                Slip = o.Slip,
+                TotalAmount = o.TotalAmount,
+                OrderDetails = o.OrderDetails,
+                Status = o.Status
+            })
+            .FirstOrDefaultAsync();
+
+        if (order == null)
+        {
+            logger.LogWarning(
+                "Get order Details. Order: {@OrderId} Response: Order not Found",
+                Id
+            );
+            return Result<SellerOrderDetailsRes?>.Failure(
+                "Order not Found", 
+                ErrorType.NotFound
+            );
+        }
+
+        logger.LogInformation(
+            "Get order Details. Order: {@OrderId} Response: Success",
+            Id
+        );
+        return Result<SellerOrderDetailsRes?>.Success(order, SuccessType.Ok);
+    }
+
+    public async Task<Result<string?>> UpdateOrderStatusBySeller(OrderUpdateReq request)
+    {
+        var order = await context.Orders.FindAsync(request.OrderId);
+
+        if (order == null)
+        {
+            logger.LogWarning(
+                "Update Order Status By Seller. Order: {@OrderId} Response: Order not Found",
+                request.OrderId
+            );
+            return Result<string?>.Failure(
+                "Order not Found", 
+                ErrorType.NotFound
+            );
+        }
+
+        order.Status = request.Status;
+        if(request.TrackingNumber != null)
+        {
+            order.TrackingNumber = request.TrackingNumber;
+        }
+
+        if(request.EstimatedDelivery != null)
+        {
+            order.EstimatedDelivery = request.EstimatedDelivery.Value;
+        }
+
+        await context.SaveChangesAsync();
+
+        logger.LogInformation(
+            "Update Order Status By Seller. Order: {@OrderId} Response: Success. Status: {@Status}",
+            request.OrderId,
+            request.Status
+        );
+
+        return Result<string?>.Success("Order status updated successfully", SuccessType.NoContent);
+    }
+
+    public async Task<Result<PagedResult<BuyerOrderRes>>> GetOrdersByBuyer(OrderStatus? status, int pageNumber, int pageSize, Guid userId)
+    {
+        if (pageNumber < 1 || pageSize < 1 || pageSize > 100)
+        {
+            logger.LogWarning(
+                "Get Orders by Buyer. Buyer: {@userId} Response: Invalid pagination parameters",
+                userId
+            );
+
+            return Result<PagedResult<BuyerOrderRes>>.Failure(
+                "Invalid pagination parameters.",
+                ErrorType.Validation
+            );
+        }
+
+        var query = context.Orders.AsNoTracking().Where(o => o.UserId == userId);
+
+        if (status != null)
+        {
+            query = query.Where(o => o.Status == status);
+        }
+
+        var totalCount = await query.CountAsync();
+
+        var orders = await query
+            .OrderBy(o => o.CreatedAt)
+            .ThenBy(o => o.Id)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .Select(o => new BuyerOrderRes
+            {
+                Id = o.Id,
+                OrderNumber = o.OrderNumber,
+                ProductName = o.Product.Name,
+                Quantity = o.Quantity,
+                TotalAmount = o.TotalAmount,
+                Status = o.Status.ToString(),
+                ShopName = o.Product.User.ShopName ?? ""
+            })
+            .ToListAsync();
+
+        if(totalCount == 0)
+        {
+            logger.LogWarning(
+                "Get order Data. User: {@UserId} Response: Orders not Found",
+                userId
+            );
+            return Result<PagedResult<BuyerOrderRes>>.Failure(
+                "Orders not Found", 
+                ErrorType.NotFound
+            );
+        } 
+        else
+        {
+            logger.LogWarning(
+                "Get order Data. User: {@UserId} Response: Orders count: {@totalCount}",
+                userId,
+                totalCount
+            );
+            return Result<PagedResult<BuyerOrderRes>>.Success(
+                new PagedResult<BuyerOrderRes>
+                {
+                    Items = orders,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    TotalCount = totalCount,
+                },
+                SuccessType.Ok
+            );
+        }
+    }
+
+    public async Task<Result<string?>> UpdateOrderStatusByBuyer(OrderUpdateBuyerReq request, Guid userId)
+    {
+        var order = await context.Orders
+            .Where(o => o.Id == request.OrderId && o.UserId == userId)
+            .FirstOrDefaultAsync();
+
+        if (order == null)
+        {
+            logger.LogWarning(
+                "Update Order Status By Buyer. Order: {@OrderId} Response: Order not Found",
+                request.OrderId
+            );
+            return Result<string?>.Failure(
+                "Order not Found", 
+                ErrorType.NotFound
+            );
+        }
+
+        order.Status = request.Status;
+        await context.SaveChangesAsync();
+
+        logger.LogInformation(
+            "Update Order Status By Buyer. Order: {@OrderId} Response: Success. Status: {@Status}",
+            request.OrderId,
+            request.Status
+        );
+
+        return Result<string?>.Success("Order status updated successfully", SuccessType.NoContent);
     }
 }

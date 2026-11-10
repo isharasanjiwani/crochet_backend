@@ -1,11 +1,12 @@
 using CrochetWorldApi.Dtos.Auth.Requests;
 using CrochetWorldApi.Dtos.Auth.Responses;
+using CrochetWorldApi.Dtos.Common.Response;
 
 namespace CrochetWorldApi.Services.Auth;
 
 public interface IAuthService
 {
-    public Task<UserResponseDto?> CreateUserAsync(CreateUserRequestDto request);
-    public Task<UserResponseDto?> LoginUserAsync(LoginUserRequestDto request);
-    public Task<UserResponseDto?> RefreshTokenAsync(RefreshTokenRequestDto request);
+    public Task<Result<UserResponseDto?>> CreateUserAsync(CreateUserRequestDto request);
+    public Task<Result<UserResponseDto?>> LoginUserAsync(LoginUserRequestDto request);
+    public Task<Result<UserResponseDto?>> RefreshTokenAsync(RefreshTokenRequestDto request);
 }

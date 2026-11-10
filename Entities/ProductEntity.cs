@@ -6,6 +6,8 @@ namespace CrochetWorldApi.Entities;
 public class ProductEntity : BaseEntity
 {
     public Guid Id { get; set; }
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int ProductId { get; set; }
     public Guid UserId { get; set; }
     public UserEntity User { get; set; } = null!;
     public required string Name { get; set; }
